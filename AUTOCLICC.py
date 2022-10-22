@@ -19,7 +19,7 @@ Dependencies:
 3. Despite my laziness, I will update this in the near future. It's just calculus kicking
    my ass that's all
     3.1 Hopefully, I will either go back to reviewing my stock BS4 knowledge or finally learn how to use PIL
-    3.2
+    3.2 Tip: Open quizlet in incognito as this multiple reloads in the normal tab and the cookies will accumulate
 
 
 """
