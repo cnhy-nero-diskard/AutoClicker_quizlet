@@ -3,6 +3,8 @@ import pyautogui
 import pyperclip
 import pymsgbox as msg
 import time
+import logging
+import sys
 
 """
 1. Will only work with 2 monitors(testing grounds on 2ndary) because im too lazy. So feel free to fork if you want
@@ -21,16 +23,31 @@ Dependencies:
     3.1 Hopefully, I will either go back to reviewing my stock BS4 knowledge or finally learn how to use PIL
     3.2 Tip: Open quizlet in incognito as this multiple reloads in the normal tab and the cookies will accumulate
 
-
+4. This program can only exit itself when pyautogui.FAILSAFEexception gets triggered
 """
 
+FORMAT = ("%(asctime)s  %(name)s  %(levelname)s  %(message)s")
 
-def ctrl(keystroke):
+logger = logging.getLogger("AUTOCLICKER")
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter(FORMAT)
+
+console = logging.StreamHandler(sys.stdout)
+console.setFormatter(formatter)
+logger.addHandler(console)
+
+file_handler = logging.FileHandler('autog.log', mode='a')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+
+def ctrl(keystroke): #a four-liner macro key with ctrl
     pyautogui.keyDown('ctrl')
     pyautogui.keyDown(keystroke)
     pyautogui.keyUp(keystroke)
     pyautogui.keyUp('ctrl')
-def ispopupwindow():
+def ispopupwindow(): #unused atm: an exception occurs whenever I use this in my code
     gege = ''
 
     while len(gege) != 0:
@@ -38,7 +55,7 @@ def ispopupwindow():
         if gege == 'Cancel':
             exit()
         
-    print("Inbox invoked")
+    
    
  
 def contains(keywords, text):
@@ -59,58 +76,54 @@ def clik():
 
 
 def moveandclick():
-    keywords = ["soluzioni", "limite", "book", "raggiunto"] #some keywords that might be present in the pop up paywall
+    keywords = ["soluzioni", "limite", "limit", "raggiunto"] #some keywords that might be present in the pop up paywall
     
     save = (3578,260),(3620,517)
     drag = (2325, 535), (2541,593)
-    reveal = (2648,869)
 
     
     iscleared = False
     iter = 1
-    while True:
-        while not iscleared:
-            pyautogui.moveTo(drag[0])
-            pyautogui.click()
-            
-            pyautogui.dragTo(2561,599,0.35,button='left')
-            ctrl('c')
-
-            text = pyperclip.paste()
-            
-            iscleared = contains(keywords,text)
-            
-
-            if not iscleared:
-                ctrl('r')
-                time.sleep(4)
+    try:
+        while True:
+            while not iscleared:
+                pyautogui.moveTo(drag[0])
                 pyautogui.click()
-            
+                pyautogui.dragTo(2561,599,0.35,button='left')
+                ctrl('c')
+                text = pyperclip.paste()
+                iscleared = contains(keywords,text)
+                if not iscleared:
+                    iter += 1
+                    ctrl('r')
+                    time.sleep(4)
+                    pyautogui.click()
+                    logger.info("keyword detected: {}".format(text))
+                    logger.info("Reload number: {}".format(iter))
+            iter = 0    
+            clik()
+            pyautogui.click()
+            pyautogui.moveTo(save[0]) #move to a usually vacant spot on the webpage area
+            pyautogui.rightClick()    
+            #pyautogui.moveTo() #hover over "Save as PDF"
+            pyautogui.click(save[1])         #click on "Save as PDF"
+            time.sleep(0.5)           #wait for the popup screen on top-left
+            ctrl('c')
+            logger.info("Saved pdf file: {}".format(pyperclip.paste()))
+            pyautogui.click(2724,569) #confirm save
+            ispopupwindow()
+            time.sleep(1)
+            pyautogui.scroll(-20000)
+            time.sleep(2)
+            pyautogui.click(3100,835) #the position of "exercise x
+            pyautogui.scroll(20000) #scroll back to top
+            time.sleep(2)
+            logger.debug('[SUCCESSFUL] Next Webpage loading...')
 
-            print(iscleared)
-            iter += 1
+            iscleared = False
 
-
-        print(iscleared)
-        clik()
-        pyautogui.click()
-        pyautogui.moveTo(save[0]) #move to a usually vacant spot on the webpage area
-        pyautogui.rightClick()    
-        pyautogui.moveTo(save[1]) #hover over "Save as PDF"
-        pyautogui.click()         #click on "Save as PDF"
-        time.sleep(0.5)           #wait for the popup screen on top-left
-        pyautogui.click(2724,569) #confirm save
-
-        ispopupwindow()
-        time.sleep(3)
-        pyautogui.scroll(-5000)
-        time.sleep(2)
-        pyautogui.click(3100,835) #the position of "exercise x
-        
-        pyautogui.scroll(5000) #scroll back to top
-        time.sleep(2)
-        iscleared = False
-    
+    except pyautogui.FailSafeException:
+        logger.warning("User has force hovered over (0,0). Stopping script")    
         
 
 
