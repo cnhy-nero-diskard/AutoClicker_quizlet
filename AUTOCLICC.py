@@ -5,6 +5,7 @@ import pymsgbox as msg
 import time
 import logging
 import sys
+import keyboard
 
 """
 1. Will only work with 2 monitors(testing grounds on 2ndary) because im too lazy. So feel free to fork if you want
@@ -24,7 +25,21 @@ Dependencies:
     3.2 Tip: Open quizlet in incognito as this multiple reloads in the normal tab and the cookies will accumulate
 
 4. This program can only exit itself when pyautogui.FAILSAFEexception gets triggered
+
+5.Issues/Quirks:
+    1.Still can't know if the program is at the next chapter (no plans)
+    2.The program will never overwrite a file with the same name. So it might help us with 5.1
+    3. A program dedicated to renaming the pdf files is not in planning
 """
+
+"""Class implementation Ideas:
+        1. Monitor number(1 if left monitor, 2 if right monitor)
+        2. Internet speed tied to time.sleep()
+        3. Activate or deactivate the debugger
+        4. The zoom size of the browser (the current setting is at 110%)
+        5. Hopefully make the program flexible by making the keymaps as customizable as possible through some override
+
+        """
 
 FORMAT = ("%(asctime)s  %(name)s  %(levelname)s  %(message)s")
 
@@ -47,13 +62,11 @@ def ctrl(keystroke): #a four-liner macro key with ctrl
     pyautogui.keyDown(keystroke)
     pyautogui.keyUp(keystroke)
     pyautogui.keyUp('ctrl')
-def ispopupwindow(): #unused atm: an exception occurs whenever I use this in my code
-    gege = ''
+def isexited(): #unused atm: an exception occurs whenever I use this in my code
+    if keyboard.is_pressed('esc'):
+        logger.warning("Script terminated by keypress")
+        raise Exception("User has terminated the script")
 
-    while len(gege) != 0:
-        gege = msg.confirm(text = 'Press ok to biot some more', title = 'Setup Confirmation', buttons=['OK', 'Cancel'])
-        if gege == 'Cancel':
-            exit()
         
     
    
@@ -77,19 +90,24 @@ def clik():
 
 def moveandclick():
     keywords = ["soluzioni", "limite", "limit", "raggiunto"] #some keywords that might be present in the pop up paywall
-    
+    scroll_mag = 20000
+    coords = {'save':((3578,260),(3620,517)),
+               'drag':((2325, 535), (2541,593)),
+                 }
     save = (3578,260),(3620,517)
     drag = (2325, 535), (2541,593)
-
-    
     iscleared = False
     iter = 1
     try:
         while True:
+            isexited()
             while not iscleared:
+                isexited()
                 pyautogui.moveTo(drag[0])
                 pyautogui.click()
-                pyautogui.dragTo(2561,599,0.35,button='left')
+                #pyautogui.dragTo(2561,599,0.35,button='left')
+                pyautogui.doubleClick(2561,599)
+                pyautogui.click()
                 ctrl('c')
                 text = pyperclip.paste()
                 iscleared = contains(keywords,text)
@@ -105,20 +123,20 @@ def moveandclick():
             pyautogui.click()
             pyautogui.moveTo(save[0]) #move to a usually vacant spot on the webpage area
             pyautogui.rightClick()    
-            #pyautogui.moveTo() #hover over "Save as PDF"
             pyautogui.click(save[1])         #click on "Save as PDF"
             time.sleep(0.5)           #wait for the popup screen on top-left
             ctrl('c')
             logger.info("Saved pdf file: {}".format(pyperclip.paste()))
             pyautogui.click(2724,569) #confirm save
-            ispopupwindow()
+            isexited()
             time.sleep(1)
-            pyautogui.scroll(-20000)
+            pyautogui.scroll(-scroll_mag)
             time.sleep(2)
             pyautogui.click(3100,835) #the position of "exercise x
-            pyautogui.scroll(20000) #scroll back to top
+            pyautogui.scroll(scroll_mag) #scroll back to top
             time.sleep(2)
             logger.debug('[SUCCESSFUL] Next Webpage loading...')
+            isexited()
 
             iscleared = False
 
