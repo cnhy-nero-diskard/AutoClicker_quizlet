@@ -27,7 +27,7 @@ Dependencies:
 4. This program can only exit itself when pyautogui.FAILSAFEexception gets triggered
 
 5.Issues/Quirks:
-    1.Still can't know if the program is at the next chapter (no plans)
+    1.This program doesn't know if the webpage is at the next chapter (no plans)
     2.The program will never overwrite a file with the same name. So it might help us with 5.1
     3. A program dedicated to renaming the pdf files is not in planning
 """
@@ -89,15 +89,19 @@ def clik():
 
 
 def moveandclick():
-    keywords = ["soluzioni", "limite", "limit", "raggiunto"] #some keywords that might be present in the pop up paywall
+    keywords = ["soluzioni", "limite", "limit", "raggiunto","Upgrade"] #some keywords that might be present in the pop up paywall
     scroll_mag = 20000
     coords = {'save':((3578,260),(3620,517)),
                'drag':((2325, 535), (2541,593)),
                  }
     save = (3578,260),(3620,517)
-    drag = (2325, 535), (2541,593)
+    drag = [(2325, 535), (2541,593)]
+    t_clickcoord = (2483,574),(2561,599)
+
+
     iscleared = False
-    iter = 1
+    iter = 0 #will keep an iterator for later analysis
+    print("bahog")
     try:
         while True:
             isexited()
@@ -106,7 +110,8 @@ def moveandclick():
                 pyautogui.moveTo(drag[0])
                 pyautogui.click()
                 #pyautogui.dragTo(2561,599,0.35,button='left')
-                pyautogui.doubleClick(2561,599)
+
+                pyautogui.doubleClick(t_clickcoord[0]) #effectively replaces dragTo()
                 pyautogui.click()
                 ctrl('c')
                 text = pyperclip.paste()
@@ -144,5 +149,5 @@ def moveandclick():
         logger.warning("User has force hovered over (0,0). Stopping script")    
         
 
-
-moveandclick()
+if __name__ == "__main__":
+    moveandclick()
