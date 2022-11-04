@@ -6,7 +6,7 @@ import time
 import logging
 import sys
 import keyboard
-
+import st_in as lis
 """
 1. Will only work with 2 monitors(testing grounds on 2ndary) because im too lazy. So feel free to fork if you want
 2. I am lazy asf
@@ -87,8 +87,18 @@ def clik():
     pyautogui.click()
     return coord
 
+def outputlog(msg, level='i'):
+    if level == 'i':
+        logger.info(msg)
+    if level == 'w':
+        logger.warning(msg)
+    if level == 'd':
+        logger.debug(msg)
+    return msg
+
 
 def moveandclick():
+    
     keywords = ["soluzioni", "limite", "limit", "raggiunto","Upgrade"] #some keywords that might be present in the pop up paywall
     scroll_mag = 20000
     coords = {'save':((3578,260),(3620,517)),
@@ -97,13 +107,17 @@ def moveandclick():
     save = (3578,260),(3620,517)
     drag = [(2325, 535), (2541,593)]
     t_clickcoord = (2483,574),(2561,599)
+    ov_kw = "Do you want to replace it?"
 
 
     iscleared = False
     iter = 0 #will keep an iterator for later analysis
-    print("bahog")
+    #lis.ears()
     try:
         while True:
+            #good =  lis.going
+            #if not good:
+             #   break
             isexited()
             while not iscleared:
                 isexited()
@@ -115,14 +129,17 @@ def moveandclick():
                 pyautogui.click()
                 ctrl('c')
                 text = pyperclip.paste()
+                if ov_kw in text:
+                    return None
                 iscleared = contains(keywords,text)
+                
                 if not iscleared:
                     iter += 1
                     ctrl('r')
                     time.sleep(4)
                     pyautogui.click()
-                    logger.info("keyword detected: {}".format(text))
-                    logger.info("Reload number: {}".format(iter))
+                    outputlog("keyword detected: {}".format(text))
+                    outputlog("Reload number: {}".format(iter))
             iter = 0    
             clik()
             pyautogui.click()
@@ -131,7 +148,7 @@ def moveandclick():
             pyautogui.click(save[1])         #click on "Save as PDF"
             time.sleep(0.5)           #wait for the popup screen on top-left
             ctrl('c')
-            logger.info("Saved pdf file: {}".format(pyperclip.paste()))
+            outputlog("Saved pdf file: {}".format(pyperclip.paste()))
             pyautogui.click(2724,569) #confirm save
             isexited()
             time.sleep(1)
@@ -140,14 +157,18 @@ def moveandclick():
             pyautogui.click(3100,835) #the position of "exercise x
             pyautogui.scroll(scroll_mag) #scroll back to top
             time.sleep(2)
-            logger.debug('[SUCCESSFUL] Next Webpage loading...')
+            outputlog('[SUCCESSFUL] Next Webpage loading...', level='d')
             isexited()
 
             iscleared = False
+            if keyboard.is_pressed('esc'):
+                raise pyautogui.FailSafeException
 
     except pyautogui.FailSafeException:
-        logger.warning("User has force hovered over (0,0). Stopping script")    
-        
+        outputlog("User has force hovered over (0,0). Stopping script", level='w')
+        outputlog("User has force hovered over (0,0). Stopping script", level='w')
+
 
 if __name__ == "__main__":
-    moveandclick()
+    #moveandclick()
+    pass
